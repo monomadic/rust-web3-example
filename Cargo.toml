@@ -1,0 +1,8 @@
+[package]
+name = "test-rust-web3"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+web3 = "0.18.0"
+tokio = "1.18.1"
