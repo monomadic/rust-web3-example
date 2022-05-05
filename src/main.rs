@@ -1,17 +1,46 @@
-#[tokio::main]
-async fn main() -> web3::Result<()> {
-    let transport = web3::transports::Http::new("https://mainnet.infura.io/v3/c60b0bb42f8a4c6481ecd229eddaca27")?;
+use wasm_bindgen_futures::spawn_local;
+use web3::{transports::eip_1193::{Eip1193, Provider}, futures::StreamExt};
+
+fn main() {
+    wasm_logger::init(wasm_logger::Config::default());
+
+    // connect wallet thread
+    spawn_local(async {
+        let provider = Provider::default().unwrap().unwrap();
+        connect_wallet(provider).await.unwrap();
+    });
+
+    // on accounts changed
+    spawn_local(async {
+        let provider = Provider::default().unwrap().unwrap();
+        let transport = Eip1193::new(provider);
+        let mut stream = transport.accounts_changed_stream();
+
+        while let Some(accounts) = stream.next().await {
+            log::info!("accounts changed {:?}", &accounts);
+        }
+    });
+    
+    // on chain changed
+    spawn_local(async {
+        let provider = Provider::default().unwrap().unwrap();
+        let transport = Eip1193::new(provider);
+        let mut stream = transport.chain_changed_stream();
+
+        while let Some(chainid) = stream.next().await {
+            log::info!("chain changed {:?}", &chainid);
+        }
+    });
+}
+
+async fn connect_wallet(provider: Provider) -> web3::Result<()> {
+    let transport = Eip1193::new(provider);
     let web3 = web3::Web3::new(transport);
+    let accounts = web3.eth().request_accounts().await.unwrap();
 
-    println!("Calling accounts.");
-    let mut accounts = web3.eth().accounts().await?;
-    println!("Accounts: {:?}", accounts);
-    accounts.push("00a329c0648769a73afac7f9381e08fb43dbea72".parse().unwrap());
-
-    println!("Calling balance.");
     for account in accounts {
-        let balance = web3.eth().balance(account, None).await?;
-        println!("Balance of {:?}: {}", account, balance);
+        let balance = web3.eth().balance(account, None).await.unwrap();
+        log::info!("Balance of {:?}: {}", account, balance);
     }
 
     Ok(())

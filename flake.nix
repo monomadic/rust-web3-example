@@ -19,10 +19,9 @@
           buildInputs = with pkgs; [
             cargo
             cargo-watch
-            #nodejs
-            wasm-pack
             trunk
-            pkg-config
+            rust-analyzer
+            wasm-pack
             (rust-bin.stable.latest.default.override {
               extensions = [ "rust-src" ];
               targets = [ "wasm32-unknown-unknown" ];
