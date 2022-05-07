@@ -10,7 +10,7 @@ functionality if there is a demand.
 ## Usage
 
 ```
-# enter a nix shell (or colect the deps yourself if you aren't using nix)
+# enter a nix flake shell (if you're using nixos, else install rust manually)
 nix develop
 
 # run trunk
